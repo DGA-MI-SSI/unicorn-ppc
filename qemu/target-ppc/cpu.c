@@ -55,6 +55,7 @@ static void ppc_cpu_initfn(struct uc_struct* uc ,Object *obj,void* opaque)
         env->sps = defsps;
     }
 #endif /* defined(TARGET_PPC64) */
+    cpu_reset(cs);
 
     if (tcg_enabled(uc)) {
         ppc_translate_init(uc);
