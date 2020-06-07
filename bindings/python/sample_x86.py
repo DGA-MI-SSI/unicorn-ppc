@@ -383,7 +383,6 @@ def test_i386_loop():
         print(">>> ECX = 0x%x" %r_ecx)
         print(">>> EDX = 0x%x" %r_edx)
 
-
     except UcError as e:
         # timeout is acceptable in this case
         if e.errno == UC_ERR_TIMEOUT:

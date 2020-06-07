@@ -121,9 +121,7 @@ enum uc_hook_idx {
 #define HOOK_FOREACH(uc, hh, idx)                         \
     for (                                                 \
         cur = (uc)->hook[idx##_IDX].head;                 \
-        cur != NULL && ((hh) = (struct hook *)cur->data)  \
-            /* stop excuting callbacks on stop request */ \
-            && !uc->stop_request;                         \
+        cur != NULL && ((hh) = (struct hook *)cur->data); \
         cur = cur->next)
 
 // if statement to check hook bounds
@@ -225,11 +223,13 @@ struct uc_struct {
 
     uint64_t block_addr;    // save the last block address we hooked
 
+    int size_recur_mem; // size for mem access when in a recursive call
+
     bool init_tcg;      // already initialized local TCGv variables?
     bool stop_request;  // request to immediately stop emulation - for uc_emu_stop()
     bool quit_request;  // request to quit the current TB, but continue to emulate - for uc_mem_protect()
     bool emulation_done;  // emulation is done by uc_emu_start()
-    bool timed_out;     // emulation timed out, uc_emu_start() will result in EC_ERR_TIMEOUT
+    bool timed_out;     // emulation timed out, that can retrieve via uc_query(UC_QUERY_TIMEOUT)
     QemuThread timer;   // timer for emulation timeout
     uint64_t timeout;   // timeout for uc_emu_start()
 
@@ -253,9 +253,11 @@ struct uc_struct {
 };
 
 // Metadata stub for the variable-size cpu context used with uc_context_*()
+// We also save cpu->jmp_env, so emulation can be reentrant
 struct uc_context {
-   size_t size;
-   char data[0];
+   size_t context_size;	// size of the real internal context structure
+   unsigned int jmp_env_size; // size of cpu->jmp_env
+   char data[0]; // context + cpu->jmp_env
 };
 
 // check if this address is mapped in (via uc_mem_map())

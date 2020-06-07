@@ -124,7 +124,9 @@ static int32 roundAndPackInt32( flag zSign, uint64_t absZ STATUS_PARAM)
         roundIncrement = zSign ? 0x7f : 0;
         break;
     default:
+        roundIncrement = 0;
         float_raise(float_flag_invalid STATUS_VAR);
+        break;
     }
     roundBits = absZ & 0x7F;
     absZ = ( absZ + roundIncrement )>>7;
@@ -175,7 +177,9 @@ static int64 roundAndPackInt64( flag zSign, uint64_t absZ0, uint64_t absZ1 STATU
         increment = zSign && absZ1;
         break;
     default:
+        increment = 0;
         float_raise(float_flag_invalid STATUS_VAR);
+        break;
     }
     if ( increment ) {
         ++absZ0;
@@ -229,7 +233,9 @@ static int64 roundAndPackUint64(flag zSign, uint64_t absZ0,
         increment = zSign && absZ1;
         break;
     default:
+        increment = 0;
         float_raise(float_flag_invalid STATUS_VAR);
+        break;
     }
     if (increment) {
         ++absZ0;
@@ -362,7 +368,7 @@ static float32 roundAndPackFloat32(flag zSign, int_fast16_t zExp, uint32_t zSig 
 {
     int8 roundingMode;
     flag roundNearestEven;
-    int8 roundIncrement, roundBits;
+    int8 roundIncrement = 0, roundBits;
     flag isTiny;
 
     roundingMode = STATUS(float_rounding_mode);
@@ -547,7 +553,7 @@ static float64 roundAndPackFloat64(flag zSign, int_fast16_t zExp, uint64_t zSig 
 {
     int8 roundingMode;
     flag roundNearestEven;
-    int_fast16_t roundIncrement, roundBits;
+    int_fast16_t roundIncrement = 0, roundBits;
     flag isTiny;
 
     roundingMode = STATUS(float_rounding_mode);
@@ -568,6 +574,7 @@ static float64 roundAndPackFloat64(flag zSign, int_fast16_t zExp, uint64_t zSig 
         break;
     default:
         float_raise(float_flag_invalid STATUS_VAR);
+        break;
     }
     roundBits = zSig & 0x3FF;
     if ( 0x7FD <= (uint16_t) zExp ) {
@@ -719,7 +726,7 @@ static floatx80
  STATUS_PARAM)
 {
     int8 roundingMode;
-    flag roundNearestEven, increment, isTiny;
+    flag roundNearestEven, increment = 0, isTiny;
     int64 roundIncrement, roundMask, roundBits;
 
     roundingMode = STATUS(float_rounding_mode);
@@ -752,6 +759,7 @@ static floatx80
         break;
     default:
         float_raise(float_flag_invalid STATUS_VAR);
+        break;
     }
     roundBits = zSig0 & roundMask;
     if ( 0x7FFD <= (uint32_t) ( zExp - 1 ) ) {
@@ -814,6 +822,7 @@ static floatx80
         break;
     default:
         float_raise(float_flag_invalid STATUS_VAR);
+        break;
     }
     if ( 0x7FFD <= (uint32_t) ( zExp - 1 ) ) {
         if (    ( 0x7FFE < zExp )
@@ -859,6 +868,7 @@ static floatx80
                 break;
             default:
                 float_raise(float_flag_invalid STATUS_VAR);
+                break;
             }
             if ( increment ) {
                 ++zSig0;
@@ -1054,7 +1064,7 @@ static float128
      flag zSign, int32 zExp, uint64_t zSig0, uint64_t zSig1, uint64_t zSig2 STATUS_PARAM)
 {
     int8 roundingMode;
-    flag roundNearestEven, increment, isTiny;
+    flag roundNearestEven, increment = 0, isTiny;
 
     roundingMode = STATUS(float_rounding_mode);
     roundNearestEven = ( roundingMode == float_round_nearest_even );
@@ -1074,6 +1084,7 @@ static float128
         break;
     default:
         float_raise(float_flag_invalid STATUS_VAR);
+        break;
     }
     if ( 0x7FFD <= (uint32_t) zExp ) {
         if (    ( 0x7FFD < zExp )
@@ -1137,6 +1148,7 @@ static float128
                 break;
             default:
                 float_raise(float_flag_invalid STATUS_VAR);
+                break;
             }
         }
     }
@@ -1857,6 +1869,7 @@ float32 float32_round_to_int( float32 a STATUS_PARAM)
         break;
     default:
         float_raise(float_flag_invalid STATUS_VAR);
+        break;
     }
     z &= ~ roundBitsMask;
     if ( z != float32_val(a) ) STATUS(float_exception_flags) |= float_flag_inexact;
@@ -3589,6 +3602,7 @@ float64 float64_round_to_int( float64 a STATUS_PARAM )
         break;
     default:
         float_raise(float_flag_invalid STATUS_VAR);
+        break;
     }
     z &= ~ roundBitsMask;
     if ( z != float64_val(a) )
@@ -4937,6 +4951,7 @@ floatx80 floatx80_round_to_int( floatx80 a STATUS_PARAM )
         break;
     default:
         float_raise(float_flag_invalid STATUS_VAR);
+        break;
     }
     z.low &= ~ roundBitsMask;
     if ( z.low == 0 ) {
@@ -6058,6 +6073,7 @@ float128 float128_round_to_int( float128 a STATUS_PARAM )
             break;
         default:
             float_raise(float_flag_invalid STATUS_VAR);
+            break;
         }
         z.low &= ~ roundBitsMask;
     }
@@ -6122,6 +6138,7 @@ float128 float128_round_to_int( float128 a STATUS_PARAM )
             break;
         default:
             float_raise(float_flag_invalid STATUS_VAR);
+            break;
         }
         z.high &= ~ roundBitsMask;
     }

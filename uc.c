@@ -102,8 +102,6 @@ const char *uc_strerror(uc_err code)
             return "Insufficient resource (UC_ERR_RESOURCE)";
         case UC_ERR_EXCEPTION:
             return "Unhandled CPU exception (UC_ERR_EXCEPTION)";
-        case UC_ERR_TIMEOUT:
-            return "Emulation timed out (UC_ERR_TIMEOUT)";
     }
 }
 
@@ -591,6 +589,7 @@ uc_err uc_emu_start(uc_engine* uc, uint64_t begin, uint64_t until, uint64_t time
     uc->invalid_error = UC_ERR_OK;
     uc->block_full = false;
     uc->emulation_done = false;
+    uc->size_recur_mem = 0;
     uc->timed_out = false;
 
     switch(uc->arch) {
@@ -696,9 +695,6 @@ uc_err uc_emu_start(uc_engine* uc, uint64_t begin, uint64_t until, uint64_t time
         // wait for the timer to finish
         qemu_thread_join(&uc->timer);
     }
-
-    if(uc->timed_out)
-        return UC_ERR_TIMEOUT;
 
     return uc->invalid_error;
 }
@@ -1287,23 +1283,29 @@ uint32_t uc_mem_regions(uc_engine *uc, uc_mem_region **regions, uint32_t *count)
 UNICORN_EXPORT
 uc_err uc_query(uc_engine *uc, uc_query_type type, size_t *result)
 {
-    if (type == UC_QUERY_PAGE_SIZE) {
-        *result = uc->target_page_size;
-        return UC_ERR_OK;
-    }
-
-    if (type == UC_QUERY_ARCH) {
-        *result = uc->arch;
-        return UC_ERR_OK;
-    }
-
-    switch(uc->arch) {
-#ifdef UNICORN_HAS_ARM
-        case UC_ARCH_ARM:
-            return uc->query(uc, type, result);
-#endif
+    switch(type) {
         default:
             return UC_ERR_ARG;
+
+        case UC_QUERY_PAGE_SIZE:
+            *result = uc->target_page_size;
+            break;
+
+        case UC_QUERY_ARCH:
+            *result = uc->arch;
+            break;
+
+        case UC_QUERY_MODE:
+#ifdef UNICORN_HAS_ARM
+            if (uc->arch == UC_ARCH_ARM) {
+                return uc->query(uc, type, result);
+            }
+#endif
+            return UC_ERR_ARG;
+
+        case UC_QUERY_TIMEOUT:
+            *result = uc->timed_out;
+            break;
     }
 
     return UC_ERR_OK;
@@ -1356,9 +1358,10 @@ uc_err uc_context_alloc(uc_engine *uc, uc_context **context)
     struct uc_context **_context = context;
     size_t size = cpu_context_size(uc->arch, uc->mode);
 
-    *_context = malloc(size + sizeof(uc_context));
+    *_context = malloc(size);
     if (*_context) {
-        (*_context)->size = size;
+        (*_context)->jmp_env_size = sizeof(*uc->cpu->jmp_env);
+        (*_context)->context_size = size - sizeof(uc_context) - (*_context)->jmp_env_size;
         return UC_ERR_OK;
     } else {
         return UC_ERR_NOMEM;
@@ -1375,21 +1378,24 @@ uc_err uc_free(void *mem)
 UNICORN_EXPORT
 size_t uc_context_size(uc_engine *uc)
 {
-    return cpu_context_size(uc->arch, uc->mode);
+    // return the total size of struct uc_context
+    return sizeof(uc_context) + cpu_context_size(uc->arch, uc->mode) + sizeof(*uc->cpu->jmp_env);
 }
 
 UNICORN_EXPORT
 uc_err uc_context_save(uc_engine *uc, uc_context *context)
 {
-    struct uc_context *_context = context;
-    memcpy(_context->data, uc->cpu->env_ptr, _context->size);
+    memcpy(context->data, uc->cpu->env_ptr, context->context_size);
+    memcpy(context->data + context->context_size, uc->cpu->jmp_env, context->jmp_env_size);
+
     return UC_ERR_OK;
 }
 
 UNICORN_EXPORT
 uc_err uc_context_restore(uc_engine *uc, uc_context *context)
 {
-    struct uc_context *_context = context;
-    memcpy(uc->cpu->env_ptr, _context->data, _context->size);
+    memcpy(uc->cpu->env_ptr, context->data, context->context_size);
+    memcpy(uc->cpu->jmp_env, context->data + context->context_size, context->jmp_env_size);
+
     return UC_ERR_OK;
 }
