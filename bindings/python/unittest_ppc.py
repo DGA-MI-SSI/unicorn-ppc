@@ -402,7 +402,7 @@ class TestInstructionSet(unittest.TestCase):
         self.engine.mem_write(ADDRESS,asm("lbz %r0,0(%r1)"))
     
         self.engine.mem_map(DATA,4096)
-        self.engine.mem_write(DATA,"\x01\x02\x03\x04")
+        self.engine.mem_write(DATA,b"\x01\x02\x03\x04")
         
         self.engine.reg_write(UC_PPC_REG_GPR_1,DATA)
 
@@ -414,7 +414,7 @@ class TestInstructionSet(unittest.TestCase):
         self.engine.mem_write(ADDRESS,asm("lbzx %r0,%r1,%r2"))
     
         self.engine.mem_map(DATA,4096)
-        self.engine.mem_write(DATA,"\x01\x02\x03\x04")
+        self.engine.mem_write(DATA,b"\x01\x02\x03\x04")
         
         self.engine.reg_write(UC_PPC_REG_GPR_1,DATA)
         self.engine.reg_write(UC_PPC_REG_GPR_2,1)
@@ -427,7 +427,7 @@ class TestInstructionSet(unittest.TestCase):
         self.engine.mem_write(ADDRESS,asm("lbzu %r0,1(%r1)"))
     
         self.engine.mem_map(DATA,4096)
-        self.engine.mem_write(DATA,"\x01\x02\x03\x04")
+        self.engine.mem_write(DATA,b"\x01\x02\x03\x04")
         
         self.engine.reg_write(UC_PPC_REG_GPR_1,DATA)
 
@@ -440,7 +440,7 @@ class TestInstructionSet(unittest.TestCase):
         self.engine.mem_write(ADDRESS,asm("lbzux %r0,%r1,%r2"))
     
         self.engine.mem_map(DATA,4096)
-        self.engine.mem_write(DATA,"\x01\x02\x03\x04")
+        self.engine.mem_write(DATA,b"\x01\x02\x03\x04")
         
         self.engine.reg_write(UC_PPC_REG_GPR_1,DATA)
         self.engine.reg_write(UC_PPC_REG_GPR_2,1)
@@ -455,7 +455,7 @@ class TestInstructionSet(unittest.TestCase):
         self.engine.mem_write(ADDRESS,asm("stb %r0,0(%r1)"))
     
         self.engine.mem_map(DATA,4096)
-        self.engine.mem_write(DATA,"\x00\x00\x00\x00")
+        self.engine.mem_write(DATA,b"\x00\x00\x00\x00")
         
         self.engine.reg_write(UC_PPC_REG_GPR_0,0x01020304)
         self.engine.reg_write(UC_PPC_REG_GPR_1,DATA)
@@ -469,7 +469,7 @@ class TestInstructionSet(unittest.TestCase):
         self.engine.mem_write(ADDRESS,asm("stbx %r0,%r1,%r2"))
     
         self.engine.mem_map(DATA,4096)
-        self.engine.mem_write(DATA,"\x00\x00\x00\x00")
+        self.engine.mem_write(DATA,b"\x00\x00\x00\x00")
         
         self.engine.reg_write(UC_PPC_REG_GPR_0,0x01020304)
         self.engine.reg_write(UC_PPC_REG_GPR_1,DATA)
@@ -484,7 +484,7 @@ class TestInstructionSet(unittest.TestCase):
         self.engine.mem_write(ADDRESS,asm("stbu %r0,4(%r1)"))
     
         self.engine.mem_map(DATA,4096)
-        self.engine.mem_write(DATA + 4,"\x00\x00\x00\x00")
+        self.engine.mem_write(DATA + 4,b"\x00\x00\x00\x00")
         
         self.engine.reg_write(UC_PPC_REG_GPR_0,0x01020304)
         self.engine.reg_write(UC_PPC_REG_GPR_1,DATA)
@@ -500,7 +500,7 @@ class TestInstructionSet(unittest.TestCase):
         self.engine.mem_write(ADDRESS,asm("stbux %r0,%r1,%r2"))
     
         self.engine.mem_map(DATA,4096)
-        self.engine.mem_write(DATA,"\x00\x00\x00\x00")
+        self.engine.mem_write(DATA,b"\x00\x00\x00\x00")
         
         self.engine.reg_write(UC_PPC_REG_GPR_0,0x01020304)
         self.engine.reg_write(UC_PPC_REG_GPR_1,DATA)
@@ -678,7 +678,7 @@ class TestInstructionSet(unittest.TestCase):
         self.engine.mem_write(ADDRESS,asm("lvebx %v0,%r1,%r2"))
 
         self.engine.mem_map(DATA,4096)
-        self.engine.mem_write(DATA,"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f")
+        self.engine.mem_write(DATA,b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f")
 
         self.engine.reg_write(UC_PPC_REG_GPR_1,DATA)
         self.engine.reg_write(UC_PPC_REG_GPR_2,1)
@@ -774,7 +774,7 @@ class TestInstructionSet(unittest.TestCase):
         self.engine.mem_write(ADDRESS,asm("evlwwsplat %r2,0(%r1)"))
 
         self.engine.mem_map(DATA,4096)
-        self.engine.mem_write(DATA,"\xFF" * 8)
+        self.engine.mem_write(DATA,b"\xFF" * 8)
         self.engine.reg_write(UC_PPC_REG_GPR_1,DATA)
         self.engine.reg_write(UC_PPC_REG_MSR,1 << 25)
 
@@ -861,7 +861,7 @@ class TestInstructionSet(unittest.TestCase):
     def test_write_prot(self):
         
         self.engine.mem_map(DATA,PAGE_SIZE,perms=UC_PROT_READ)
-        self.engine.mem_write(DATA,"\x00" * 8)
+        self.engine.mem_write(DATA,b"\x00" * 8)
         
         self.engine.mem_write(ADDRESS,asm("stb %r0,0(%r1)"))
 
