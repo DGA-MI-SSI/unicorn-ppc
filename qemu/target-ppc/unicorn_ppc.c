@@ -59,8 +59,10 @@ int ppc_reg_read(struct uc_struct *uc, unsigned int *regs, void **vals, int coun
             *(float64 *)value = ppc_cpu->env.fpr[regid - UC_PPC_REG_FPR_0];
         else if (regid >= UC_PPC_REG_CR_0 && regid <= UC_PPC_REG_CR_7)
             *(int32_t *)value = ppc_cpu->env.crf[regid - UC_PPC_REG_CR_0];
-         else if (regid >= UC_PPC_REG_VR_0 && regid <= UC_PPC_REG_VR_31)
+#ifdef CONFIG_INT128
+        else if (regid >= UC_PPC_REG_VR_0 && regid <= UC_PPC_REG_VR_31)
             *(__uint128_t *)value = ppc_cpu->env.avr[regid - UC_PPC_REG_VR_0].u128;
+#endif
         else {
             switch(regid) {
                 case UC_PPC_REG_FPSCR:
@@ -113,8 +115,10 @@ int ppc_reg_write(struct uc_struct *uc, unsigned int *regs, void* const* vals, i
             ppc_cpu->env.fpr[regid - UC_PPC_REG_FPR_0] = *(float64 *)value;
         else if (regid >= UC_PPC_REG_CR_0 && regid <= UC_PPC_REG_CR_7)
             ppc_cpu->env.crf[regid - UC_PPC_REG_CR_0] = *(uint32_t *)value;
+#ifdef CONFIG_INT128
         else if (regid >= UC_PPC_REG_VR_0 && regid <= UC_PPC_REG_VR_31)
-            ppc_cpu->env.avr[regid - UC_PPC_REG_VR_0].u128 = *(__uint128_t *)value; 
+            ppc_cpu->env.avr[regid - UC_PPC_REG_VR_0].u128 = *(__uint128_t *)value;
+#endif
         else {
             switch(regid) {
                 case UC_PPC_REG_FPSCR:
