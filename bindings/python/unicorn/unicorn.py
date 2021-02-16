@@ -244,6 +244,13 @@ class uc_arm64_neon128(ctypes.Structure):
         ("high_qword", ctypes.c_uint64),
     ]
 
+class uc_ppc_avr(ctypes.Structure):
+    """128-bit Altivec register"""
+    _fields_ = [
+        ("low_qword", ctypes.c_uint64),
+        ("high_qword", ctypes.c_uint64),
+    ]
+
 # Subclassing ref to allow property assignment.
 class UcRef(weakref.ref):
     pass
@@ -429,7 +436,7 @@ class Uc(object):
             if reg_id in range(ppc_const.UC_PPC_REG_FPR_0,ppc_const.UC_PPC_REG_FPR_0 + 32):
                 reg = ctypes.c_double(value)
             elif reg_id in range(ppc_const.UC_PPC_REG_VR_0,ppc_const.UC_PPC_REG_VR_0 + 32):
-                reg = uc_pp_avr()
+                reg = uc_ppc_avr()
                 reg.low_qword = value & 0xffffffffffffffff
                 reg.high_qword = value >> 64
 
